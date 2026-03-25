@@ -1,0 +1,177 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  padding: 20px;
+}
+
+.container {
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 20px;
+  margin-bottom: 20px;
+  color: #cba6f7;
+}
+
+h2 {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #a6adc8;
+  margin-bottom: 12px;
+}
+
+section {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #313244;
+  border-radius: 8px;
+}
+
+/* Profile controls */
+.profile-controls {
+  margin-bottom: 12px;
+}
+
+select {
+  width: 100%;
+  padding: 8px 12px;
+  background: #45475a;
+  color: #cdd6f4;
+  border: 1px solid #585b70;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+select:focus {
+  outline: none;
+  border-color: #cba6f7;
+}
+
+.profile-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.save-profile {
+  display: flex;
+  gap: 8px;
+}
+
+input[type="text"] {
+  flex: 1;
+  padding: 8px 12px;
+  background: #45475a;
+  color: #cdd6f4;
+  border: 1px solid #585b70;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: #cba6f7;
+}
+
+input[type="text"]::placeholder {
+  color: #6c7086;
+}
+
+button {
+  padding: 8px 16px;
+  background: #cba6f7;
+  color: #1e1e2e;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+button:hover {
+  background: #b4befe;
+}
+
+button.danger {
+  background: #f38ba8;
+}
+
+button.danger:hover {
+  background: #eba0ac;
+}
+
+/* Appearance settings */
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.setting-row:last-child {
+  margin-bottom: 0;
+}
+
+.setting-row label {
+  min-width: 60px;
+  font-size: 14px;
+}
+
+input[type="range"] {
+  flex: 1;
+  accent-color: #cba6f7;
+}
+
+#opacity-value {
+  min-width: 36px;
+  font-size: 13px;
+  color: #a6adc8;
+}
+
+input[type="color"] {
+  width: 40px;
+  height: 32px;
+  padding: 2px;
+  background: #45475a;
+  border: 1px solid #585b70;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Shortcuts */
+.shortcut-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+kbd {
+  display: inline-block;
+  padding: 4px 8px;
+  background: #45475a;
+  border: 1px solid #585b70;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  min-width: 120px;
+  text-align: center;
+}

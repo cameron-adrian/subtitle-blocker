@@ -1,0 +1,12 @@
+{
+  "name": "subtitle-blocker",
+  "version": "1.0.0",
+  "description": "A desktop overlay that blocks subtitles on any video player",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^33.0.0"
+  }
+}
