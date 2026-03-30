@@ -24,6 +24,7 @@ function createOverlayWindow() {
     focusable: false,
     resizable: false,
     fullscreenable: false,
+    type: 'panel',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -35,6 +36,13 @@ function createOverlayWindow() {
   overlayWin.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   overlayWin.setIgnoreMouseEvents(true, { forward: true });
   overlayWin.loadFile(path.join(__dirname, 'overlay', 'overlay.html'));
+
+  // Re-assert always-on-top periodically to survive macOS Space transitions
+  setInterval(() => {
+    if (overlayWin && !overlayWin.isDestroyed()) {
+      overlayWin.setAlwaysOnTop(true, 'screen-saver');
+    }
+  }, 1000);
 }
 
 function createSettingsWindow() {
@@ -143,6 +151,12 @@ ipcMain.handle('set-last-profile', (_event, name) => {
 // App lifecycle
 
 app.whenReady().then(async () => {
+  // Hide dock icon on macOS so the app acts as a background utility,
+  // which helps the panel window float above fullscreen Spaces
+  if (process.platform === 'darwin') {
+    app.dock.hide();
+  }
+
   createOverlayWindow();
   createSettingsWindow();
   tray = createTray(toggleBlocker, showSettings);
