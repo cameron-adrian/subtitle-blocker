@@ -107,6 +107,7 @@ final class OverlayWindowController: NSWindowController {
 
         blockerView.fillColor   = profile.color.nsColor
         blockerView.fillOpacity = profile.opacity
+        blockerView.blurEnabled = profile.blurEnabled
         blockerView.needsDisplay = true
     }
 
@@ -116,7 +117,8 @@ final class OverlayWindowController: NSWindowController {
             x: f.origin.x, y: f.origin.y,
             width: f.width, height: f.height,
             opacity: blockerView.fillOpacity,
-            color: CodableColor(blockerView.fillColor)
+            color: CodableColor(blockerView.fillColor),
+            blurEnabled: blockerView.blurEnabled
         )
     }
 
@@ -127,6 +129,10 @@ final class OverlayWindowController: NSWindowController {
     func setColor(_ color: NSColor) {
         blockerView.fillColor = color
         blockerView.needsDisplay = true
+    }
+
+    func setBlur(_ enabled: Bool) {
+        blockerView.blurEnabled = enabled
     }
 
     func toggleVisibility() {

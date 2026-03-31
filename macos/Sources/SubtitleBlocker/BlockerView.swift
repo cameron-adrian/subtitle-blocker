@@ -14,6 +14,27 @@ final class BlockerView: NSView {
     var fillColor: NSColor = .black { didSet { needsDisplay = true } }
     /// 0.1 … 1.0 — applied via the layer's opacity so the window itself stays clear.
     var fillOpacity: CGFloat = 0.85 { didSet { layer?.opacity = Float(fillOpacity) } }
+    /// When true, shows a frosted-glass blur instead of a solid fill.
+    var blurEnabled: Bool = false {
+        didSet {
+            blurView.isHidden = !blurEnabled
+            needsDisplay = true
+        }
+    }
+
+    // Lazy so the view exists before addSubview is called in commonInit.
+    private lazy var blurView: NSVisualEffectView = {
+        let v = NSVisualEffectView(frame: bounds)
+        v.autoresizingMask = [.width, .height]
+        v.blendingMode = .behindWindow
+        v.material     = .fullScreenUI
+        v.state        = .active
+        v.wantsLayer   = true
+        v.layer?.cornerRadius  = 4
+        v.layer?.masksToBounds = true
+        v.isHidden = true
+        return v
+    }()
 
     // MARK: Resize directions
 
@@ -54,17 +75,27 @@ final class BlockerView: NSView {
 
     private func commonInit() {
         wantsLayer = true
-        layer?.cornerRadius = 4
+        layer?.cornerRadius  = 4
+        layer?.masksToBounds = true
         // Opacity is on the layer so the color/alpha stay independent.
         layer?.opacity = Float(fillOpacity)
+        // Ensure blurView is inserted before any drawing occurs.
+        addSubview(blurView)
     }
 
     // MARK: Drawing
 
     override func draw(_ dirtyRect: NSRect) {
-        fillColor.withAlphaComponent(1.0).setFill()
-        bounds.fill()
-        // Hover border is drawn as an outer stroke when a drag/resize is active.
+        if blurEnabled {
+            // Blur mode: draw a light colour tint over the NSVisualEffectView.
+            fillColor.withAlphaComponent(0.25).setFill()
+        } else {
+            // Solid mode: fill fully (layer opacity provides overall transparency).
+            fillColor.withAlphaComponent(1.0).setFill()
+        }
+        NSBezierPath(roundedRect: bounds, xRadius: 4, yRadius: 4).fill()
+
+        // Hover border while dragging / resizing.
         if isDragging || activeHandle != nil {
             NSColor.white.withAlphaComponent(0.4).setStroke()
             let path = NSBezierPath(roundedRect: bounds.insetBy(dx: 1, dy: 1),

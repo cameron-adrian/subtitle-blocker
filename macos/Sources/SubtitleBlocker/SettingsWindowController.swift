@@ -13,6 +13,7 @@ final class SettingsWindowController: NSWindowController {
     private var opacitySlider  = NSSlider()
     private var opacityLabel   = NSTextField()
     private var colorWell      = NSColorWell()
+    private var blurCheckbox   = NSButton()
 
     // Callbacks to AppDelegate.
     var onLoadProfile:  ((String) -> Void)?
@@ -20,10 +21,12 @@ final class SettingsWindowController: NSWindowController {
     var onDeleteProfile:((String) -> Void)?
     var onOpacityChange:((CGFloat) -> Void)?
     var onColorChange:  ((NSColor) -> Void)?
+    var onBlurChange:   ((Bool) -> Void)?
 
     // Provides live state from the overlay for "save current" operations.
     var currentOpacity: CGFloat = 0.85
     var currentColor:   NSColor = .black
+    var currentBlur:    Bool    = false
 
     // MARK: Init
 
@@ -125,6 +128,12 @@ final class SettingsWindowController: NSWindowController {
         let row2 = hstack([label("Color"), colorWell, NSView()])
         stack.addArrangedSubview(row2)
 
+        // Blur checkbox
+        blurCheckbox = NSButton(checkboxWithTitle: "Blur (frosted glass)", target: self,
+                                action: #selector(blurToggled(_:)))
+        blurCheckbox.state = currentBlur ? .on : .off
+        stack.addArrangedSubview(blurCheckbox)
+
         return stack
     }
 
@@ -181,6 +190,10 @@ final class SettingsWindowController: NSWindowController {
         onColorChange?(sender.color)
     }
 
+    @objc private func blurToggled(_ sender: NSButton) {
+        onBlurChange?(sender.state == .on)
+    }
+
     // MARK: Public update methods
 
     func refreshProfiles(names: [String], selecting: String? = nil) {
@@ -192,12 +205,14 @@ final class SettingsWindowController: NSWindowController {
         }
     }
 
-    func syncAppearance(opacity: CGFloat, color: NSColor) {
+    func syncAppearance(opacity: CGFloat, color: NSColor, blur: Bool = false) {
         currentOpacity = opacity
         currentColor   = color
+        currentBlur    = blur
         opacitySlider.doubleValue = Double(opacity)
         updateOpacityLabel()
-        colorWell.color = color
+        colorWell.color  = color
+        blurCheckbox.state = blur ? .on : .off
     }
 
     // MARK: Helpers

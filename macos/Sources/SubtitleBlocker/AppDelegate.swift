@@ -30,7 +30,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let profile = ProfileManager.shared.lastProfile {
             overlayWC.apply(profile: profile)
             settingsWC.syncAppearance(opacity: profile.opacity,
-                                      color: profile.color.nsColor)
+                                      color: profile.color.nsColor,
+                                      blur: profile.blurEnabled)
         }
 
         // Respond to hotkeys.
@@ -89,7 +90,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             guard let self else { return }
             guard let profile = ProfileManager.shared.profile(named: name) else { return }
             self.overlayWC.apply(profile: profile)
-            self.settingsWC.syncAppearance(opacity: profile.opacity, color: profile.color.nsColor)
+            self.settingsWC.syncAppearance(opacity: profile.opacity,
+                                           color: profile.color.nsColor,
+                                           blur: profile.blurEnabled)
             ProfileManager.shared.lastProfileName = name
         }
 
@@ -114,6 +117,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         settingsWC.onColorChange = { [weak self] color in
             self?.overlayWC.setColor(color)
+        }
+
+        settingsWC.onBlurChange = { [weak self] enabled in
+            self?.overlayWC.setBlur(enabled)
         }
     }
 
@@ -146,7 +153,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         refreshSettingsProfiles()
         // Sync live appearance state.
         let profile = overlayWC.currentProfile(merging: .default)
-        settingsWC.syncAppearance(opacity: profile.opacity, color: profile.color.nsColor)
+        settingsWC.syncAppearance(opacity: profile.opacity, color: profile.color.nsColor,
+                                  blur: profile.blurEnabled)
         settingsWC.window?.center()
         settingsWC.window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
