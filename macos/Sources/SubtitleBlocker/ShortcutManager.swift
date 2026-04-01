@@ -1,3 +1,4 @@
+import AppKit
 import Carbon.HIToolbox
 import Foundation
 
@@ -57,7 +58,7 @@ final class ShortcutManager {
                     case 2:
                         NotificationCenter.default.post(name: .showSettings, object: nil)
                     case 3:
-                        NSApplication.shared.terminate(nil)
+                        exit(0)
                     default:
                         break
                     }
