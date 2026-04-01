@@ -96,7 +96,6 @@ final class OverlayWindowController: NSWindowController {
     // MARK: Public interface
 
     func apply(profile: Profile) {
-        guard let screen = NSScreen.main else { return }
         // Profiles store Y from the bottom of the screen (matching Electron).
         let frame = NSRect(x: profile.x,
                            y: profile.y,
