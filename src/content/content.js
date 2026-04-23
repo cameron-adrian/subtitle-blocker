@@ -81,6 +81,14 @@
     e.stopPropagation();
   });
 
+  // Right-click the overlay to dismiss it. Toggle via the toolbar popup to
+  // bring it back.
+  blocker.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    wrapper.classList.add('hidden');
+  });
+
   shadow.querySelectorAll('.resize-handle').forEach((handle) => {
     handle.addEventListener('mousedown', (e) => {
       isResizing = true;
