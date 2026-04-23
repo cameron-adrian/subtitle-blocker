@@ -1,68 +1,44 @@
-const fs = require('fs');
-const path = require('path');
-const { app } = require('electron');
+const STORE_KEY = 'subtitle-blocker-store';
 
-function getFilePath() {
-  return path.join(app.getPath('userData'), 'profiles.json');
+async function _readStore() {
+  const result = await api.storage.local.get(STORE_KEY);
+  return result[STORE_KEY] || { profiles: {}, lastProfile: null };
 }
 
-function readStore() {
-  const filePath = getFilePath();
-  try {
-    const raw = fs.readFileSync(filePath, 'utf-8');
-    return JSON.parse(raw);
-  } catch {
-    return { profiles: {}, lastProfile: null };
-  }
+async function _writeStore(store) {
+  await api.storage.local.set({ [STORE_KEY]: store });
 }
 
-function writeStore(store) {
-  const filePath = getFilePath();
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, JSON.stringify(store, null, 2));
+async function listProfiles() {
+  const store = await _readStore();
+  return Object.keys(store.profiles).sort();
 }
 
-function listProfiles() {
-  const store = readStore();
-  return Object.keys(store.profiles);
-}
-
-function loadProfile(name) {
-  const store = readStore();
+async function loadProfile(name) {
+  const store = await _readStore();
   return store.profiles[name] || null;
 }
 
-function saveProfile(name, data) {
-  const store = readStore();
+async function saveProfile(name, data) {
+  const store = await _readStore();
   store.profiles[name] = data;
-  writeStore(store);
+  await _writeStore(store);
 }
 
-function deleteProfile(name) {
-  const store = readStore();
+async function deleteProfile(name) {
+  const store = await _readStore();
   delete store.profiles[name];
-  if (store.lastProfile === name) {
-    store.lastProfile = null;
-  }
-  writeStore(store);
+  if (store.lastProfile === name) store.lastProfile = null;
+  await _writeStore(store);
 }
 
-function getLastProfile() {
-  const store = readStore();
+async function getLastProfile() {
+  const store = await _readStore();
   return store.lastProfile;
 }
 
-function setLastProfile(name) {
-  const store = readStore();
+async function setLastProfile(name) {
+  const store = await _readStore();
   store.lastProfile = name;
-  writeStore(store);
+  await _writeStore(store);
 }
-
-module.exports = {
-  listProfiles,
-  loadProfile,
-  saveProfile,
-  deleteProfile,
-  getLastProfile,
-  setLastProfile,
-};
