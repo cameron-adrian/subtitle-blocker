@@ -42,3 +42,25 @@ async function setLastProfile(name) {
   store.lastProfile = name;
   await _writeStore(store);
 }
+
+async function getVisibilityMode() {
+  const store = await _readStore();
+  return store.visibilityMode || DEFAULT_VISIBILITY_MODE;
+}
+
+async function setVisibilityMode(mode) {
+  const store = await _readStore();
+  store.visibilityMode = mode;
+  await _writeStore(store);
+}
+
+async function getGlobalVisible() {
+  const store = await _readStore();
+  return Boolean(store.globalVisible);
+}
+
+async function setGlobalVisible(value) {
+  const store = await _readStore();
+  store.globalVisible = Boolean(value);
+  await _writeStore(store);
+}

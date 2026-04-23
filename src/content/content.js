@@ -33,9 +33,40 @@
     blocker.appendChild(h);
   }
 
+  // Start hidden. Visibility is driven by the toolbar popup (per-tab mode) or
+  // by the globalVisible flag in storage (global mode). If we started visible
+  // by default, every tab the user opened would immediately show a black
+  // rectangle.
+  wrapper.classList.add('hidden');
+
   document.documentElement.appendChild(host);
 
   // Initial position: horizontally centered, near the bottom of the viewport.
+  // Color and opacity are composited into a single rgba() background so the
+  // overlay has a single, semi-transparent fill. This matters for
+  // `backdrop-filter: blur()` — a fully opaque background hides the
+  // filtered backdrop, so the blur slider would appear to do nothing.
+  let currentColor = DEFAULT_COLOR;
+  let currentOpacity = DEFAULT_OPACITY;
+  let currentBlur = DEFAULT_BLUR;
+
+  function hexToRgba(hex, alpha) {
+    let h = (hex || '#000000').trim().replace(/^#/, '');
+    if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+    const r = parseInt(h.slice(0, 2), 16) || 0;
+    const g = parseInt(h.slice(2, 4), 16) || 0;
+    const b = parseInt(h.slice(4, 6), 16) || 0;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
+  function renderAppearance() {
+    blocker.style.background = hexToRgba(currentColor, currentOpacity);
+    const filter = currentBlur > 0 ? `blur(${currentBlur}px)` : '';
+    blocker.style.backdropFilter = filter;
+    // Safari / older WebKit alias.
+    blocker.style.webkitBackdropFilter = filter;
+  }
+
   function applyInitialPosition() {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -45,18 +76,7 @@
     blocker.style.height = h + 'px';
     blocker.style.left = Math.round((vw - w) / 2) + 'px';
     blocker.style.top = Math.max(0, vh - h - DEFAULT_BOTTOM_OFFSET) + 'px';
-    blocker.style.opacity = String(DEFAULT_OPACITY);
-    blocker.style.background = DEFAULT_COLOR;
-    setBlur(DEFAULT_BLUR);
-  }
-
-  function setBlur(px) {
-    const n = Number(px) || 0;
-    const filter = n > 0 ? `blur(${n}px)` : '';
-    blocker.style.backdropFilter = filter;
-    // Safari / older WebKit alias.
-    blocker.style.webkitBackdropFilter = filter;
-    blocker.dataset.blur = String(n);
+    renderAppearance();
   }
   applyInitialPosition();
 
@@ -86,7 +106,7 @@
   blocker.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    wrapper.classList.add('hidden');
+    hideOverlay();
   });
 
   shadow.querySelectorAll('.resize-handle').forEach((handle) => {
@@ -179,9 +199,9 @@
       y: blocker.offsetTop,
       width: blocker.offsetWidth,
       height: blocker.offsetHeight,
-      opacity: parseFloat(blocker.style.opacity) || DEFAULT_OPACITY,
-      color: rgbToHex(blocker.style.background) || DEFAULT_COLOR,
-      blur: Number(blocker.dataset.blur) || DEFAULT_BLUR,
+      opacity: currentOpacity,
+      color: currentColor,
+      blur: currentBlur,
     };
   }
 
@@ -190,20 +210,39 @@
     if (data.y !== undefined) blocker.style.top = data.y + 'px';
     if (data.width !== undefined) blocker.style.width = data.width + 'px';
     if (data.height !== undefined) blocker.style.height = data.height + 'px';
-    if (data.opacity !== undefined) blocker.style.opacity = String(data.opacity);
-    if (data.color !== undefined) blocker.style.background = data.color;
-    if (data.blur !== undefined) setBlur(data.blur);
+    if (data.opacity !== undefined) currentOpacity = Number(data.opacity);
+    if (data.color !== undefined) currentColor = data.color;
+    if (data.blur !== undefined) currentBlur = Number(data.blur) || 0;
+    renderAppearance();
   }
 
-  // The popup stores colors as hex, but CSSStyleDeclaration.background
-  // normalizes to rgb()/rgba(). Convert back so state round-trips cleanly.
-  function rgbToHex(str) {
-    if (!str) return null;
-    if (str.startsWith('#')) return str;
-    const m = str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-    if (!m) return null;
-    const h = (n) => Number(n).toString(16).padStart(2, '0');
-    return '#' + h(m[1]) + h(m[2]) + h(m[3]);
+  // ---- Visibility (per-tab vs global) --------------------------------
+  // Cached copies of the two storage-backed settings. Kept in sync via the
+  // storage.onChanged listener below so message handlers can branch
+  // synchronously.
+  let visibilityMode = DEFAULT_VISIBILITY_MODE;
+  let globalVisible = false;
+
+  function setHidden(hidden) {
+    wrapper.classList.toggle('hidden', hidden);
+  }
+
+  function hideOverlay() {
+    setHidden(true);
+    if (visibilityMode === MODE_GLOBAL) {
+      globalVisible = false;
+      // Fire and forget — the echoed storage.onChanged event will confirm.
+      setGlobalVisible(false).catch(() => {});
+    }
+  }
+
+  function toggleOverlay() {
+    const nextHidden = !wrapper.classList.contains('hidden');
+    setHidden(nextHidden);
+    if (visibilityMode === MODE_GLOBAL) {
+      globalVisible = !nextHidden;
+      setGlobalVisible(globalVisible).catch(() => {});
+    }
   }
 
   api.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
@@ -213,7 +252,7 @@
         sendResponse({ ok: true });
         return;
       case MSG.TOGGLE_VISIBILITY:
-        wrapper.classList.toggle('hidden');
+        toggleOverlay();
         sendResponse({ hidden: wrapper.classList.contains('hidden') });
         return;
       case MSG.UPDATE_BLOCKER:
@@ -221,15 +260,18 @@
         sendResponse({ ok: true });
         return;
       case MSG.SET_OPACITY:
-        blocker.style.opacity = String(msg.value);
+        currentOpacity = Number(msg.value);
+        renderAppearance();
         sendResponse({ ok: true });
         return;
       case MSG.SET_COLOR:
-        blocker.style.background = msg.value;
+        currentColor = msg.value;
+        renderAppearance();
         sendResponse({ ok: true });
         return;
       case MSG.SET_BLUR:
-        setBlur(msg.value);
+        currentBlur = Number(msg.value) || 0;
+        renderAppearance();
         sendResponse({ ok: true });
         return;
       case MSG.GET_STATE:
@@ -241,9 +283,33 @@
     }
   });
 
-  // ---- Auto-apply last profile for this host --------------------------
+  // ---- Storage sync --------------------------------------------------
+  // Any tab that flips the mode or globalVisible writes to storage.local;
+  // every tab's content script picks up the change here. In per-tab mode
+  // we just refresh the cache and leave visibility alone so other tabs
+  // don't force this one open or closed.
+  api.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'local') return;
+    const change = changes[STORE_KEY];
+    if (!change || !change.newValue) return;
+    const next = change.newValue;
+    visibilityMode = next.visibilityMode || DEFAULT_VISIBILITY_MODE;
+    globalVisible = Boolean(next.globalVisible);
+    if (visibilityMode === MODE_GLOBAL) {
+      setHidden(!globalVisible);
+    }
+  });
+
+  // ---- Init ----------------------------------------------------------
   (async () => {
     try {
+      visibilityMode = await getVisibilityMode();
+      globalVisible = await getGlobalVisible();
+      if (visibilityMode === MODE_GLOBAL) {
+        setHidden(!globalVisible);
+      }
+      // In per-tab mode we stay hidden until the user toggles the popup.
+
       const last = await getLastProfile();
       if (last) {
         const data = await loadProfile(last);

@@ -131,14 +131,54 @@ input[type="range"] {
   text-align: right;
 }
 
-input[type="color"] {
-  width: 36px;
-  height: 28px;
-  padding: 2px;
-  background: #45475a;
-  border: 1px solid #585b70;
-  border-radius: 6px;
+.mode-select {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.mode-select label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   cursor: pointer;
+}
+
+.mode-select input[type="radio"] {
+  accent-color: #cba6f7;
+  margin: 0;
+}
+
+.swatches {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.swatch {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px #585b70;
+  background: transparent;
+}
+
+.swatch:hover {
+  border-color: #b4befe;
+}
+
+.swatch.active {
+  border-color: #cba6f7;
+}
+
+#color-hex {
+  flex: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-transform: lowercase;
 }
 
 .status {

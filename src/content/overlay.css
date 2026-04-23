@@ -15,8 +15,7 @@
 
 .blocker {
   position: absolute;
-  background: #000000;
-  opacity: 0.85;
+  background: rgba(0, 0, 0, 0.85);
   border-radius: 4px;
   cursor: move;
   user-select: none;
