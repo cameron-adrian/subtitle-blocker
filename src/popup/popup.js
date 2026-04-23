@@ -4,6 +4,7 @@ const deleteBtn = document.getElementById('delete-btn');
 const profileName = document.getElementById('profile-name');
 const saveBtn = document.getElementById('save-btn');
 const toggleBtn = document.getElementById('toggle-btn');
+const modeRadios = [...document.querySelectorAll('input[name="vis-mode"]')];
 const opacitySlider = document.getElementById('opacity-slider');
 const opacityValue = document.getElementById('opacity-value');
 const swatches = [...document.querySelectorAll('.swatch')];
@@ -86,6 +87,21 @@ toggleBtn.addEventListener('click', async () => {
   await sendToContent({ type: MSG.TOGGLE_VISIBILITY });
 });
 
+for (const radio of modeRadios) {
+  radio.addEventListener('change', async () => {
+    if (!radio.checked) return;
+    if (radio.value === MODE_GLOBAL) {
+      // Seed globalVisible from the active tab so the mode switch doesn't
+      // surprise the user by flipping the current tab's visibility. Every
+      // other tab then adopts this state via storage.onChanged.
+      const resp = await sendToContent({ type: MSG.GET_STATE });
+      const visible = resp ? !resp.hidden : false;
+      await setGlobalVisible(visible);
+    }
+    await setVisibilityMode(radio.value);
+  });
+}
+
 loadBtn.addEventListener('click', async () => {
   const name = profileSelect.value;
   if (!name) return;
@@ -165,9 +181,16 @@ blurSlider.addEventListener('input', async () => {
   await sendToContent({ type: MSG.SET_BLUR, value: val });
 });
 
+async function syncMode() {
+  const mode = await getVisibilityMode();
+  for (const radio of modeRadios) {
+    radio.checked = radio.value === mode;
+  }
+}
+
 // --- Init -------------------------------------------------------------
 
 (async () => {
-  await refreshProfileList();
+  await Promise.all([refreshProfileList(), syncMode()]);
   await syncFromContent();
 })();

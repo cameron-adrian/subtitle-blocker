@@ -33,6 +33,12 @@
     blocker.appendChild(h);
   }
 
+  // Start hidden. Visibility is driven by the toolbar popup (per-tab mode) or
+  // by the globalVisible flag in storage (global mode). If we started visible
+  // by default, every tab the user opened would immediately show a black
+  // rectangle.
+  wrapper.classList.add('hidden');
+
   document.documentElement.appendChild(host);
 
   // Initial position: horizontally centered, near the bottom of the viewport.
@@ -100,7 +106,7 @@
   blocker.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    wrapper.classList.add('hidden');
+    hideOverlay();
   });
 
   shadow.querySelectorAll('.resize-handle').forEach((handle) => {
@@ -210,6 +216,35 @@
     renderAppearance();
   }
 
+  // ---- Visibility (per-tab vs global) --------------------------------
+  // Cached copies of the two storage-backed settings. Kept in sync via the
+  // storage.onChanged listener below so message handlers can branch
+  // synchronously.
+  let visibilityMode = DEFAULT_VISIBILITY_MODE;
+  let globalVisible = false;
+
+  function setHidden(hidden) {
+    wrapper.classList.toggle('hidden', hidden);
+  }
+
+  function hideOverlay() {
+    setHidden(true);
+    if (visibilityMode === MODE_GLOBAL) {
+      globalVisible = false;
+      // Fire and forget — the echoed storage.onChanged event will confirm.
+      setGlobalVisible(false).catch(() => {});
+    }
+  }
+
+  function toggleOverlay() {
+    const nextHidden = !wrapper.classList.contains('hidden');
+    setHidden(nextHidden);
+    if (visibilityMode === MODE_GLOBAL) {
+      globalVisible = !nextHidden;
+      setGlobalVisible(globalVisible).catch(() => {});
+    }
+  }
+
   api.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (!msg || !msg.type) return;
     switch (msg.type) {
@@ -217,7 +252,7 @@
         sendResponse({ ok: true });
         return;
       case MSG.TOGGLE_VISIBILITY:
-        wrapper.classList.toggle('hidden');
+        toggleOverlay();
         sendResponse({ hidden: wrapper.classList.contains('hidden') });
         return;
       case MSG.UPDATE_BLOCKER:
@@ -248,9 +283,33 @@
     }
   });
 
-  // ---- Auto-apply last profile for this host --------------------------
+  // ---- Storage sync --------------------------------------------------
+  // Any tab that flips the mode or globalVisible writes to storage.local;
+  // every tab's content script picks up the change here. In per-tab mode
+  // we just refresh the cache and leave visibility alone so other tabs
+  // don't force this one open or closed.
+  api.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'local') return;
+    const change = changes[STORE_KEY];
+    if (!change || !change.newValue) return;
+    const next = change.newValue;
+    visibilityMode = next.visibilityMode || DEFAULT_VISIBILITY_MODE;
+    globalVisible = Boolean(next.globalVisible);
+    if (visibilityMode === MODE_GLOBAL) {
+      setHidden(!globalVisible);
+    }
+  });
+
+  // ---- Init ----------------------------------------------------------
   (async () => {
     try {
+      visibilityMode = await getVisibilityMode();
+      globalVisible = await getGlobalVisible();
+      if (visibilityMode === MODE_GLOBAL) {
+        setHidden(!globalVisible);
+      }
+      // In per-tab mode we stay hidden until the user toggles the popup.
+
       const last = await getLastProfile();
       if (last) {
         const data = await loadProfile(last);

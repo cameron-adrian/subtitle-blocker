@@ -131,6 +131,25 @@ input[type="range"] {
   text-align: right;
 }
 
+.mode-select {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.mode-select label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.mode-select input[type="radio"] {
+  accent-color: #cba6f7;
+  margin: 0;
+}
+
 .swatches {
   display: flex;
   gap: 6px;

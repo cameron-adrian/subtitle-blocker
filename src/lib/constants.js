@@ -17,3 +17,7 @@ const MSG = {
   GET_STATE: 'GET_STATE',
   PING: 'PING',
 };
+
+const MODE_PER_TAB = 'per-tab';
+const MODE_GLOBAL = 'global';
+const DEFAULT_VISIBILITY_MODE = MODE_PER_TAB;
