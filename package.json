@@ -1,49 +1,15 @@
 {
   "name": "subtitle-blocker",
   "version": "1.0.0",
-  "description": "A desktop overlay that blocks subtitles on any video player",
-  "main": "src/main.js",
+  "description": "A cross-browser WebExtension that blocks burned-in subtitles with a draggable overlay rectangle.",
+  "private": true,
   "scripts": {
-    "start": "electron .",
-    "dist": "electron-builder",
-    "dist:mac": "electron-builder --mac",
-    "dist:win": "electron-builder --win",
-    "dist:linux": "electron-builder --linux"
-  },
-  "build": {
-    "appId": "com.subtitle-blocker.app",
-    "productName": "Subtitle Blocker",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "src/**/*",
-      "package.json"
-    ],
-    "mac": {
-      "category": "public.app-category.utilities",
-      "icon": "build/icon.png",
-      "target": "dmg"
-    },
-    "dmg": {
-      "title": "Subtitle Blocker",
-      "contents": [
-        { "x": 130, "y": 220 },
-        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
-      ]
-    },
-    "win": {
-      "icon": "build/icon.png",
-      "target": "nsis"
-    },
-    "linux": {
-      "icon": "build/icon.png",
-      "target": "AppImage",
-      "category": "Utility"
-    }
+    "dev": "web-ext run",
+    "dev:chromium": "web-ext run --target chromium",
+    "lint": "web-ext lint",
+    "build": "web-ext build --overwrite-dest"
   },
   "devDependencies": {
-    "electron": "^33.0.0",
-    "electron-builder": "^25.1.8"
+    "web-ext": "^8.3.0"
   }
 }

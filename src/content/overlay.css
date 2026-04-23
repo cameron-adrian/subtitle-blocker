@@ -1,0 +1,43 @@
+:host {
+  all: initial;
+}
+
+.wrapper {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2147483647;
+}
+
+.wrapper.hidden {
+  display: none;
+}
+
+.blocker {
+  position: absolute;
+  background: #000000;
+  opacity: 0.85;
+  border-radius: 4px;
+  cursor: move;
+  user-select: none;
+  pointer-events: auto;
+  transition: box-shadow 0.15s ease;
+}
+
+.blocker:hover {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+
+.resize-handle {
+  position: absolute;
+  pointer-events: auto;
+}
+
+.resize-n { top: -4px; left: 8px; right: 8px; height: 8px; cursor: n-resize; }
+.resize-s { bottom: -4px; left: 8px; right: 8px; height: 8px; cursor: s-resize; }
+.resize-e { right: -4px; top: 8px; bottom: 8px; width: 8px; cursor: e-resize; }
+.resize-w { left: -4px; top: 8px; bottom: 8px; width: 8px; cursor: w-resize; }
+.resize-ne { top: -4px; right: -4px; width: 12px; height: 12px; cursor: ne-resize; }
+.resize-nw { top: -4px; left: -4px; width: 12px; height: 12px; cursor: nw-resize; }
+.resize-se { bottom: -4px; right: -4px; width: 12px; height: 12px; cursor: se-resize; }
+.resize-sw { bottom: -4px; left: -4px; width: 12px; height: 12px; cursor: sw-resize; }
