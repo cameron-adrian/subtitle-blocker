@@ -47,6 +47,16 @@
     blocker.style.top = Math.max(0, vh - h - DEFAULT_BOTTOM_OFFSET) + 'px';
     blocker.style.opacity = String(DEFAULT_OPACITY);
     blocker.style.background = DEFAULT_COLOR;
+    setBlur(DEFAULT_BLUR);
+  }
+
+  function setBlur(px) {
+    const n = Number(px) || 0;
+    const filter = n > 0 ? `blur(${n}px)` : '';
+    blocker.style.backdropFilter = filter;
+    // Safari / older WebKit alias.
+    blocker.style.webkitBackdropFilter = filter;
+    blocker.dataset.blur = String(n);
   }
   applyInitialPosition();
 
@@ -163,6 +173,7 @@
       height: blocker.offsetHeight,
       opacity: parseFloat(blocker.style.opacity) || DEFAULT_OPACITY,
       color: rgbToHex(blocker.style.background) || DEFAULT_COLOR,
+      blur: Number(blocker.dataset.blur) || DEFAULT_BLUR,
     };
   }
 
@@ -173,6 +184,7 @@
     if (data.height !== undefined) blocker.style.height = data.height + 'px';
     if (data.opacity !== undefined) blocker.style.opacity = String(data.opacity);
     if (data.color !== undefined) blocker.style.background = data.color;
+    if (data.blur !== undefined) setBlur(data.blur);
   }
 
   // The popup stores colors as hex, but CSSStyleDeclaration.background
@@ -206,6 +218,10 @@
         return;
       case MSG.SET_COLOR:
         blocker.style.background = msg.value;
+        sendResponse({ ok: true });
+        return;
+      case MSG.SET_BLUR:
+        setBlur(msg.value);
         sendResponse({ ok: true });
         return;
       case MSG.GET_STATE:

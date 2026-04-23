@@ -7,6 +7,8 @@ const toggleBtn = document.getElementById('toggle-btn');
 const opacitySlider = document.getElementById('opacity-slider');
 const opacityValue = document.getElementById('opacity-value');
 const colorPicker = document.getElementById('color-picker');
+const blurSlider = document.getElementById('blur-slider');
+const blurValue = document.getElementById('blur-value');
 const statusEl = document.getElementById('status');
 
 function setStatus(text, isError = false) {
@@ -62,6 +64,9 @@ async function syncFromContent() {
   opacitySlider.value = state.opacity;
   opacityValue.textContent = Math.round(state.opacity * 100) + '%';
   if (state.color) colorPicker.value = state.color;
+  const blur = state.blur ?? 0;
+  blurSlider.value = blur;
+  blurValue.textContent = blur + 'px';
 }
 
 // --- Event wiring -----------------------------------------------------
@@ -85,6 +90,10 @@ loadBtn.addEventListener('click', async () => {
     opacityValue.textContent = Math.round(data.opacity * 100) + '%';
   }
   if (data.color !== undefined) colorPicker.value = data.color;
+  if (data.blur !== undefined) {
+    blurSlider.value = data.blur;
+    blurValue.textContent = data.blur + 'px';
+  }
   setStatus(`Loaded "${name}"`);
 });
 
@@ -119,6 +128,12 @@ opacitySlider.addEventListener('input', async () => {
 
 colorPicker.addEventListener('input', async () => {
   await sendToContent({ type: MSG.SET_COLOR, value: colorPicker.value });
+});
+
+blurSlider.addEventListener('input', async () => {
+  const val = parseInt(blurSlider.value, 10);
+  blurValue.textContent = val + 'px';
+  await sendToContent({ type: MSG.SET_BLUR, value: val });
 });
 
 // --- Init -------------------------------------------------------------
