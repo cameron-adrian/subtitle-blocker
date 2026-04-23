@@ -6,10 +6,21 @@ const saveBtn = document.getElementById('save-btn');
 const toggleBtn = document.getElementById('toggle-btn');
 const opacitySlider = document.getElementById('opacity-slider');
 const opacityValue = document.getElementById('opacity-value');
-const colorPicker = document.getElementById('color-picker');
+const swatches = [...document.querySelectorAll('.swatch')];
+const colorHex = document.getElementById('color-hex');
 const blurSlider = document.getElementById('blur-slider');
 const blurValue = document.getElementById('blur-value');
 const statusEl = document.getElementById('status');
+
+const HEX_RE = /^#[0-9a-fA-F]{6}$/;
+
+function setColorUI(color) {
+  const lc = (color || '').toLowerCase();
+  colorHex.value = lc;
+  for (const s of swatches) {
+    s.classList.toggle('active', s.dataset.color.toLowerCase() === lc);
+  }
+}
 
 function setStatus(text, isError = false) {
   statusEl.textContent = text;
@@ -63,7 +74,7 @@ async function syncFromContent() {
   const { state } = resp;
   opacitySlider.value = state.opacity;
   opacityValue.textContent = Math.round(state.opacity * 100) + '%';
-  if (state.color) colorPicker.value = state.color;
+  if (state.color) setColorUI(state.color);
   const blur = state.blur ?? 0;
   blurSlider.value = blur;
   blurValue.textContent = blur + 'px';
@@ -89,7 +100,7 @@ loadBtn.addEventListener('click', async () => {
     opacitySlider.value = data.opacity;
     opacityValue.textContent = Math.round(data.opacity * 100) + '%';
   }
-  if (data.color !== undefined) colorPicker.value = data.color;
+  if (data.color !== undefined) setColorUI(data.color);
   if (data.blur !== undefined) {
     blurSlider.value = data.blur;
     blurValue.textContent = data.blur + 'px';
@@ -126,8 +137,26 @@ opacitySlider.addEventListener('input', async () => {
   await sendToContent({ type: MSG.SET_OPACITY, value: val });
 });
 
-colorPicker.addEventListener('input', async () => {
-  await sendToContent({ type: MSG.SET_COLOR, value: colorPicker.value });
+// Preset color swatches. Using plain buttons instead of <input type="color">
+// because the native OS color-picker dialog takes focus away from the
+// extension popup in Firefox, which causes the popup to close before the
+// user's choice commits.
+for (const sw of swatches) {
+  sw.addEventListener('click', async () => {
+    const color = sw.dataset.color;
+    setColorUI(color);
+    await sendToContent({ type: MSG.SET_COLOR, value: color });
+  });
+}
+
+colorHex.addEventListener('change', async () => {
+  const val = colorHex.value.trim();
+  if (!HEX_RE.test(val)) {
+    setStatus('Hex must be #rrggbb', true);
+    return;
+  }
+  setColorUI(val);
+  await sendToContent({ type: MSG.SET_COLOR, value: val });
 });
 
 blurSlider.addEventListener('input', async () => {

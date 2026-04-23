@@ -38,8 +38,20 @@
         <span id="opacity-value">85%</span>
       </div>
       <div class="setting-row">
-        <label for="color-picker">Color</label>
-        <input type="color" id="color-picker" value="#000000">
+        <label>Color</label>
+        <div class="swatches" id="swatches">
+          <button type="button" class="swatch" data-color="#000000" style="background:#000000" title="Black"></button>
+          <button type="button" class="swatch" data-color="#333333" style="background:#333333" title="Charcoal"></button>
+          <button type="button" class="swatch" data-color="#808080" style="background:#808080" title="Grey"></button>
+          <button type="button" class="swatch" data-color="#ffffff" style="background:#ffffff" title="White"></button>
+          <button type="button" class="swatch" data-color="#d72638" style="background:#d72638" title="Red"></button>
+          <button type="button" class="swatch" data-color="#1e90ff" style="background:#1e90ff" title="Blue"></button>
+          <button type="button" class="swatch" data-color="#2ea043" style="background:#2ea043" title="Green"></button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <label for="color-hex">Hex</label>
+        <input type="text" id="color-hex" placeholder="#000000" maxlength="7" spellcheck="false" autocomplete="off">
       </div>
       <div class="setting-row">
         <label for="blur-slider">Blur</label>
