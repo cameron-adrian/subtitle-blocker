@@ -15,7 +15,9 @@
 
 .blocker {
   position: absolute;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   border-radius: 4px;
   cursor: move;
   user-select: none;
