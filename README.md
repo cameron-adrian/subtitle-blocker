@@ -16,6 +16,21 @@ Works on Firefox and Chrome (Manifest V3).
 - Saved profiles for quick recall (stored in `browser.storage.local`)
 - Adjustable opacity and color
 
+## Setup
+
+Prerequisites: Node.js 18+ and npm (only needed for the `web-ext` dev loop and
+packaging — a plain checkout can be side-loaded without Node).
+
+```sh
+git clone https://github.com/cameron-adrian/subtitle-blocker.git
+cd subtitle-blocker
+npm install
+```
+
+That's it for the one-time setup. To actually load the extension, see
+**Install (developer / unpacked)** below, or jump to **Develop** for the
+live-reload workflow.
+
 ## Install (developer / unpacked)
 
 ### Firefox
