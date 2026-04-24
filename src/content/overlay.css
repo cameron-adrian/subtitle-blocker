@@ -15,9 +15,6 @@
 
 .blocker {
   position: absolute;
-  background: rgba(0, 0, 0, 0);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   border-radius: 4px;
   cursor: move;
   user-select: none;
@@ -27,6 +24,42 @@
 
 .blocker:hover {
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+
+.blocker-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/*
+ * Optional feathered edges. Two linear gradients stacked with
+ * mask-composite: intersect produce a rectangle with a soft band on all
+ * four sides so the blur fades into the page rather than cutting off at
+ * a hard seam. Falls back gracefully to crisp edges on old browsers.
+ */
+.blocker-fill.feathered {
+  --feather: min(24px, 40%);
+  mask-image:
+    linear-gradient(to right,
+      transparent 0, black var(--feather),
+      black calc(100% - var(--feather)), transparent 100%),
+    linear-gradient(to bottom,
+      transparent 0, black var(--feather),
+      black calc(100% - var(--feather)), transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(to right,
+      transparent 0, black var(--feather),
+      black calc(100% - var(--feather)), transparent 100%),
+    linear-gradient(to bottom,
+      transparent 0, black var(--feather),
+      black calc(100% - var(--feather)), transparent 100%);
+  -webkit-mask-composite: source-in;
 }
 
 .resize-handle {

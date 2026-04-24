@@ -64,3 +64,14 @@ async function setGlobalVisible(value) {
   store.globalVisible = Boolean(value);
   await _writeStore(store);
 }
+
+async function getFeatherEdges() {
+  const store = await _readStore();
+  return store.featherEdges ?? DEFAULT_FEATHER_EDGES;
+}
+
+async function setFeatherEdges(value) {
+  const store = await _readStore();
+  store.featherEdges = Boolean(value);
+  await _writeStore(store);
+}
