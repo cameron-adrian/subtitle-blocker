@@ -181,6 +181,20 @@ input[type="range"] {
   text-transform: lowercase;
 }
 
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  min-width: auto;
+}
+
+.checkbox-label input[type="checkbox"] {
+  accent-color: #cba6f7;
+  margin: 0;
+}
+
 .status {
   font-size: 11px;
   color: #a6adc8;

@@ -11,6 +11,7 @@ const swatches = [...document.querySelectorAll('.swatch')];
 const colorHex = document.getElementById('color-hex');
 const blurSlider = document.getElementById('blur-slider');
 const blurValue = document.getElementById('blur-value');
+const featherToggle = document.getElementById('feather-toggle');
 const statusEl = document.getElementById('status');
 
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
@@ -181,6 +182,11 @@ blurSlider.addEventListener('input', async () => {
   await sendToContent({ type: MSG.SET_BLUR, value: val });
 });
 
+featherToggle.addEventListener('change', async () => {
+  await setFeatherEdges(featherToggle.checked);
+  // Content scripts pick up the change via storage.onChanged.
+});
+
 async function syncMode() {
   const mode = await getVisibilityMode();
   for (const radio of modeRadios) {
@@ -188,9 +194,13 @@ async function syncMode() {
   }
 }
 
+async function syncFeather() {
+  featherToggle.checked = await getFeatherEdges();
+}
+
 // --- Init -------------------------------------------------------------
 
 (async () => {
-  await Promise.all([refreshProfileList(), syncMode()]);
+  await Promise.all([refreshProfileList(), syncMode(), syncFeather()]);
   await syncFromContent();
 })();
