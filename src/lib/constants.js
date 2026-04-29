@@ -21,3 +21,5 @@ const MSG = {
 const MODE_PER_TAB = 'per-tab';
 const MODE_GLOBAL = 'global';
 const DEFAULT_VISIBILITY_MODE = MODE_PER_TAB;
+
+const DEFAULT_FEATHER_EDGES = false;

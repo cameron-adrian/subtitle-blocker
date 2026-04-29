@@ -25,6 +25,13 @@
   blocker.className = 'blocker';
   wrapper.appendChild(blocker);
 
+  // Fill layer carries the tint + backdrop-filter so we can mask it for
+  // feathered edges without also masking the resize handles that live
+  // inside .blocker.
+  const fill = document.createElement('div');
+  fill.className = 'blocker-fill';
+  blocker.appendChild(fill);
+
   const HANDLE_CLASSES = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
   for (const dir of HANDLE_CLASSES) {
     const h = document.createElement('div');
@@ -49,6 +56,7 @@
   let currentColor = DEFAULT_COLOR;
   let currentOpacity = DEFAULT_OPACITY;
   let currentBlur = DEFAULT_BLUR;
+  let featherEdges = DEFAULT_FEATHER_EDGES;
 
   function hexToRgba(hex, alpha) {
     let h = (hex || '#000000').trim().replace(/^#/, '');
@@ -60,11 +68,12 @@
   }
 
   function renderAppearance() {
-    blocker.style.background = hexToRgba(currentColor, currentOpacity);
+    fill.style.background = hexToRgba(currentColor, currentOpacity);
     const filter = currentBlur > 0 ? `blur(${currentBlur}px)` : '';
-    blocker.style.backdropFilter = filter;
+    fill.style.backdropFilter = filter;
     // Safari / older WebKit alias.
-    blocker.style.webkitBackdropFilter = filter;
+    fill.style.webkitBackdropFilter = filter;
+    fill.classList.toggle('feathered', featherEdges);
   }
 
   function applyInitialPosition() {
@@ -298,6 +307,11 @@
     if (visibilityMode === MODE_GLOBAL) {
       setHidden(!globalVisible);
     }
+    const nextFeather = next.featherEdges ?? DEFAULT_FEATHER_EDGES;
+    if (nextFeather !== featherEdges) {
+      featherEdges = Boolean(nextFeather);
+      fill.classList.toggle('feathered', featherEdges);
+    }
   });
 
   // ---- Init ----------------------------------------------------------
@@ -309,6 +323,9 @@
         setHidden(!globalVisible);
       }
       // In per-tab mode we stay hidden until the user toggles the popup.
+
+      featherEdges = await getFeatherEdges();
+      fill.classList.toggle('feathered', featherEdges);
 
       const last = await getLastProfile();
       if (last) {
