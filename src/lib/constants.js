@@ -3,7 +3,6 @@ const MIN_HEIGHT = 30;
 const DEFAULT_OPACITY = 0;
 const DEFAULT_COLOR = '#000000';
 const DEFAULT_BLUR = 6;
-const MAX_BLUR = 40;
 const DEFAULT_WIDTH = 800;
 const DEFAULT_HEIGHT = 100;
 const DEFAULT_BOTTOM_OFFSET = 80;
@@ -15,7 +14,6 @@ const MSG = {
   SET_COLOR: 'SET_COLOR',
   SET_BLUR: 'SET_BLUR',
   GET_STATE: 'GET_STATE',
-  PING: 'PING',
 };
 
 const MODE_PER_TAB = 'per-tab';
