@@ -248,9 +248,6 @@
   api.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (!msg || !msg.type) return;
     switch (msg.type) {
-      case MSG.PING:
-        sendResponse({ ok: true });
-        return;
       case MSG.TOGGLE_VISIBILITY:
         toggleOverlay();
         sendResponse({ hidden: wrapper.classList.contains('hidden') });
