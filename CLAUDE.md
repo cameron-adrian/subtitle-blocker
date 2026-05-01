@@ -8,3 +8,4 @@
 
 - Avoid running background tasks (e.g., icon generation, asset processing) that produce file changes during active development. Complete such tasks synchronously or run them before committing.
 - For Electron apps, always verify the build toolchain (npm, node, electron-builder) is available in the current environment before attempting to build or package. If missing, flag it immediately rather than proceeding.
+- Installing dev tooling (e.g. `npm install -g web-ext`, `npx`, local devDependencies) is fine when needed to validate or build the project.
