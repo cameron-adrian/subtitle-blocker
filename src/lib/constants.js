@@ -6,6 +6,9 @@ const DEFAULT_BLUR = 6;
 const DEFAULT_WIDTH = 800;
 const DEFAULT_HEIGHT = 100;
 const DEFAULT_BOTTOM_OFFSET = 80;
+// Minimum on-screen pixels kept visible while dragging or after layout
+// changes — guarantees the user can always grab the rectangle back.
+const DRAG_MARGIN = 24;
 
 const MSG = {
   TOGGLE_VISIBILITY: 'TOGGLE_VISIBILITY',

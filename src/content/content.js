@@ -67,6 +67,17 @@
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
 
+  function clampPosition(x, y) {
+    const w = blocker.offsetWidth;
+    const h = blocker.offsetHeight;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    return {
+      x: Math.max(-(w - DRAG_MARGIN), Math.min(vw - DRAG_MARGIN, x)),
+      y: Math.max(-(h - DRAG_MARGIN), Math.min(vh - DRAG_MARGIN, y)),
+    };
+  }
+
   function renderAppearance() {
     fill.style.background = hexToRgba(currentColor, currentOpacity);
     const filter = currentBlur > 0 ? `blur(${currentBlur}px)` : '';
@@ -145,8 +156,9 @@
     if (isDragging) {
       const dx = e.clientX - dragStartX;
       const dy = e.clientY - dragStartY;
-      blocker.style.left = (startRect.x + dx) + 'px';
-      blocker.style.top = (startRect.y + dy) + 'px';
+      const { x, y } = clampPosition(startRect.x + dx, startRect.y + dy);
+      blocker.style.left = x + 'px';
+      blocker.style.top = y + 'px';
     } else if (isResizing) {
       const dx = e.clientX - dragStartX;
       const dy = e.clientY - dragStartY;
@@ -201,6 +213,14 @@
     }
   });
 
+  // Window resize can also push the rectangle offscreen if it was anchored
+  // near the right/bottom edge of a larger viewport.
+  window.addEventListener('resize', () => {
+    const { x, y } = clampPosition(blocker.offsetLeft, blocker.offsetTop);
+    blocker.style.left = x + 'px';
+    blocker.style.top = y + 'px';
+  });
+
   // ---- Messaging ------------------------------------------------------
   function getState() {
     return {
@@ -222,6 +242,14 @@
     if (data.opacity !== undefined) currentOpacity = Number(data.opacity);
     if (data.color !== undefined) currentColor = data.color;
     if (data.blur !== undefined) currentBlur = Number(data.blur) || 0;
+    // A profile saved at a different viewport size can land partly or
+    // entirely offscreen; pull it back into bounds.
+    if (data.x !== undefined || data.y !== undefined ||
+        data.width !== undefined || data.height !== undefined) {
+      const { x, y } = clampPosition(blocker.offsetLeft, blocker.offsetTop);
+      blocker.style.left = x + 'px';
+      blocker.style.top = y + 'px';
+    }
     renderAppearance();
   }
 
@@ -296,18 +324,29 @@
   // don't force this one open or closed.
   api.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local') return;
-    const change = changes[STORE_KEY];
-    if (!change || !change.newValue) return;
-    const next = change.newValue;
-    visibilityMode = next.visibilityMode || DEFAULT_VISIBILITY_MODE;
-    globalVisible = Boolean(next.globalVisible);
-    if (visibilityMode === MODE_GLOBAL) {
+
+    let visibilityChanged = false;
+    const modeChange = changes[KEYS.VISIBILITY_MODE];
+    if (modeChange) {
+      visibilityMode = modeChange.newValue || DEFAULT_VISIBILITY_MODE;
+      visibilityChanged = true;
+    }
+    const visChange = changes[KEYS.GLOBAL_VISIBLE];
+    if (visChange) {
+      globalVisible = Boolean(visChange.newValue);
+      visibilityChanged = true;
+    }
+    if (visibilityChanged && visibilityMode === MODE_GLOBAL) {
       setHidden(!globalVisible);
     }
-    const nextFeather = next.featherEdges ?? DEFAULT_FEATHER_EDGES;
-    if (nextFeather !== featherEdges) {
-      featherEdges = Boolean(nextFeather);
-      fill.classList.toggle('feathered', featherEdges);
+
+    const featherChange = changes[KEYS.FEATHER_EDGES];
+    if (featherChange) {
+      const nextFeather = Boolean(featherChange.newValue ?? DEFAULT_FEATHER_EDGES);
+      if (nextFeather !== featherEdges) {
+        featherEdges = nextFeather;
+        fill.classList.toggle('feathered', featherEdges);
+      }
     }
   });
 
